@@ -95,7 +95,6 @@ for(let i=0; i<spectrum.length; i+=5){
 noFill();
 strokeWeight(0.05)
  stroke(i,255,255);
-// fill(i,255,20)
  vertex(0,y);
  vertex(i+random(0,width),y);
  vertex(i,y+random(0,height))
