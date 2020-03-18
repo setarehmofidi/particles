@@ -17,6 +17,7 @@ let diam;
 let volhistory=[]
 let capture;
 let t=0;
+let fft;
 function preload(){
     song = loadSound('assets/sometimes.mp3');
     for(let i=0;i<3;i++){
@@ -24,12 +25,15 @@ function preload(){
   }
 }
 function setup(){
- createCanvas(800,550); 
+ createCanvas(windowWidth,windowHeight); 
+ //createCanvas(500,380)
  capture = createCapture(VIDEO);
  capture.hide()
  song.addCue(5, changeBackground());
   //song = new p5.AudioIn();
  //noCursor();
+  angleMode(DEGREES);
+  frameRate(15);
   slider = createSlider(1, 360, 1, 1);
   slider.position(width, height);
   button = createButton("play");
@@ -38,6 +42,8 @@ function setup(){
   button.mousePressed(togglePlaying);
   song.addCue(2, changeBackground());
   amp= new p5.Amplitude();
+  //smmothing value and number of bins
+  fft = new p5.FFT(0.9, 256);
   //snow = new Snow();
   for (let i=0; i<number; i++){
     flakes[i] = new Snow();
@@ -76,7 +82,27 @@ function letsJump(){
     
 }
 function draw(){
- background(0, 5);
+ background(0,30);
+
+let spectrum = fft.analyze();
+for(let i=0; i<spectrum.length; i+=5){
+ let freqamp= spectrum[i];
+ let y= map(freqamp,0,255,0,width);
+ //line(i,height,i,y);
+ push();
+ colorMode(HSB);
+ beginShape();
+noFill();
+strokeWeight(0.05)
+ stroke(i,255,255);
+// fill(i,255,20)
+ vertex(0,y);
+ vertex(i+random(0,width),y);
+ vertex(i,y+random(0,height))
+ vertex(width, random(height))
+ endShape();
+ pop()
+}
 
   //color capturing
 capture.loadPixels();  
@@ -86,16 +112,19 @@ capture.loadPixels();
 let vol = amp.getLevel();
 volhistory.push(vol);
  push();
+ scale(4);
   let currentY = map(vol, 0, 1, height, 0);
   translate(0, mouseY  - currentY);
   noFill();
   //stroke(c);
-  var r = 255 * noise(t+10);
-  var g = 255 * noise(t+15);
-  var b = 255 * noise(t+20);
-  stroke(r,g,b);
+  let r = 255 * noise(t+10);
+  let g = 255 * noise(t+15);
+  let b = 255 * noise(t+20);
+  stroke(i,255,255);
+  strokeCap(SQUARE);
+  //strokeCap(ROUND);
   t = t + 0.01;
-  //strokeWeight(4);
+  strokeWeight(1);
   beginShape();
   for (var i = 0; i < volhistory.length; i++) {
     var y = map(volhistory[i], 0, 1, height, 0);
@@ -107,7 +136,7 @@ volhistory.push(vol);
     volhistory.splice(0, 1);
   }
 
-  
+
 
 
   frames+=10;
@@ -121,15 +150,36 @@ for (let i = 0; i < number; i++) {
   //flakes[i].addSnow();
   }
 // if(song.currentTime()>5){
-//   for (let i = 0; i < starNum; i++) {
-//   stars[i].display();
-//   stars[i].move();
-//   stars[i].addStar();
-//   }
-//  }
+ 
+ if (keyIsPressed === true){
 
+  for (let i = 0; i < starNum; i++) {
+  
+  stars[i].display();
+  stars[i].move();
+  stars[i].addStar();
+    
+  }
+//  }
+  }
+  
 }
 
+function volCircle(){
+  push();
+ translate(width/2,height/2);
+  noFill();
+  beginShape();
+  for(let m=0; m<360; m++){
+    let rr= map(volhistory[m], 0, 1, 50, 300);
+    let xx= rr*cos(m);
+    let yy= rr*sin(m);
+    vertex(xx,yy);
+  }
+
+  endShape();
+pop();
+}
 function mousePressed(){
   flakes[whichflake].teleportFlake(mouseX,mouseY);
   flakes[whichflake].makeFlakeVisible();
@@ -152,11 +202,17 @@ class Snow{
   diam = map(vol,0.009,0.1,0.05,100);    
 
 if(this.visible){
+    let r = 255 * noise(t+100);
+    let g = 255 * noise(t+5);
+    let b = 255 * noise(t+150);
+  ///changing the color over time
     if(newcolor==false){
       stroke(song.currentTime()%255,0,255);
     }else{
-      stroke(255,0,song.currentTime())
+      stroke(r,g,b)
     }
+    
+   // stroke(r,g,b);
     noFill();
     push();
     translate(this.x,this.y);
@@ -164,8 +220,8 @@ if(this.visible){
     beginShape();
     for(var i = 0; i < 100; i++) {
      var radius = diam+ random(10,25);
-     this.newx = cos(radians(i * 3.6)) * radius;
-     this.newy = sin(radians(i * 3.6)) * radius;
+     this.newx = cos(i * 3.6) * radius;
+     this.newy = sin(i * 3.6) * radius;
       vertex(this.newx, this.newy);
     }
     endShape();
