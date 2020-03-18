@@ -84,7 +84,74 @@ function letsJump(){
 function draw(){
  background(0,30);
 
-let spectrum = fft.analyze();
+fftOperations();
+
+volCircle();
+
+  //color capturing
+capture.loadPixels();  
+ 
+volGraph();
+
+  frames+=10;
+
+
+for (let i = 0; i < number; i++) {
+  flakes[i].display();
+  flakes[i].move();
+  flakes[i].bounce();
+  flakes[i].color();
+  }
+
+ 
+ if (keyIsPressed === true){
+
+  for (let i = 0; i < starNum; i++) {
+  
+  stars[i].display();
+  stars[i].move();
+  stars[i].addStar();
+    
+  }
+
+  }
+  
+}
+
+function volGraph(){
+  let vol = amp.getLevel();
+  //color capturing
+  let c = capture.get(150, 90);
+volhistory.push(vol);
+ push();
+ scale(4);
+  let currentY = map(vol, 0, 1, height, 0);
+  translate(0, mouseY  - currentY);
+  noFill();
+  stroke(c);
+  // let r = 255 * noise(t+10);
+  // let g = 255 * noise(t+15);
+  // let b = 255 * noise(t+20);
+  // stroke(i,255,255);
+  strokeCap(SQUARE);
+  //strokeCap(ROUND);
+  t = t + 0.01;
+  strokeWeight(1);
+  beginShape();
+  for (var i = 0; i < volhistory.length; i++) {
+    var y = map(volhistory[i], 0, 1, height, 0);
+    vertex(i, y);
+  }
+  endShape();
+  pop();
+  if (volhistory.length > 360 ) {
+    volhistory.splice(0, 1);
+  }
+
+}
+
+function fftOperations(){
+  let spectrum = fft.analyze();
 for(let i=0; i<spectrum.length; i+=5){
  let freqamp= spectrum[i];
  let y= map(freqamp,0,255,0,width);
@@ -101,73 +168,15 @@ strokeWeight(0.05)
  vertex(width, random(height))
  endShape();
  pop()
-}
-
-  //color capturing
-capture.loadPixels();  
- let c = capture.get(150, 90);
-
-
-let vol = amp.getLevel();
-volhistory.push(vol);
- push();
- scale(4);
-  let currentY = map(vol, 0, 1, height, 0);
-  translate(0, mouseY  - currentY);
-  noFill();
-  //stroke(c);
-  let r = 255 * noise(t+10);
-  let g = 255 * noise(t+15);
-  let b = 255 * noise(t+20);
-  stroke(i,255,255);
-  strokeCap(SQUARE);
-  //strokeCap(ROUND);
-  t = t + 0.01;
-  strokeWeight(1);
-  beginShape();
-  for (var i = 0; i < volhistory.length; i++) {
-    var y = map(volhistory[i], 0, 1, height, 0);
-    vertex(i, y);
   }
-  endShape();
-  pop();
-  if (volhistory.length > width ) {
-    volhistory.splice(0, 1);
-  }
-
-
-
-
-  frames+=10;
-
-
-for (let i = 0; i < number; i++) {
-  flakes[i].display();
-  flakes[i].move();
-  flakes[i].bounce();
-  flakes[i].color();
-  //flakes[i].addSnow();
-  }
-// if(song.currentTime()>5){
- 
- if (keyIsPressed === true){
-
-  for (let i = 0; i < starNum; i++) {
-  
-  stars[i].display();
-  stars[i].move();
-  stars[i].addStar();
-    
-  }
-//  }
-  }
-  
 }
 
 function volCircle(){
   push();
+
  translate(width/2,height/2);
   noFill();
+  scale(4);
   beginShape();
   for(let m=0; m<360; m++){
     let rr= map(volhistory[m], 0, 1, 50, 300);
